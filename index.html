@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Measuring Lua's Performance</title>
+
+    <meta name="description" content="On this talk I would like to explore the different ways there are for measuring the performance of a piece of code in Lua. We will visit common techniques and usual pitfalls, and also how the host application and the different Lua implementations influence the results.">
+    <meta name="author" content="Enrique García Cota">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/kikito.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/vs.css">
+
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+
+        <section data-markdown data-separator="\*\*\*">
+          <script type="text/template">
+
+<!-- .slide: data-background="./img/title.jpg" -->
+
+## Measuring Lua's Performance
+
+<div class="subtitle">
+  <p><small>Enrique García Cota (kikito)</small></p>
+  <p><small><a href="https://www.lua.org/wshop17.html">Lua workshop 2017</a></small></p>
+</blockquote>
+
+
+***
+
+<figure class="stretch">
+  <img src="./img/thijs.jpg" class="stretch" height="100%">
+</figure>
+
+***
+
+<!-- .slide: data-background="#008AB8" -->
+
+## I. Intro
+## II. Lua Land
+## III. C Land
+## IV. Common Pitfalls
+
+***
+
+# I. Intro
+
+***
+
+<figure class="stretch">
+  <a href="https://www.lua.org">
+    <img src="./img/lua.jpg" class="stretch plain">
+  </a>
+</figure>
+
+***
+
+<!-- .slide: data-background="#000000" -->
+
+<figure class="stretch">
+  <img src="./img/C.png" class="stretch plain">
+</figure>
+
+***
+
+<!-- .slide: data-background="#000000" -->
+
+<figure class="stretch">
+  <img src="./img/lalaland.jpg" class="stretch plain">
+</figure>
+
+***
+
+# II. Lua Land
+
+***
+
+`os.clock()`
+
+.
+
+***
+
+`os.clock()`
+
+Linux: CPU time. Win: Clock time
+
+***
+
+`os.clock()`
+
+Win/linux: ms. Others: ms or s
+
+***
+
+`os.clock()`
+
+http://lua-users.org/wiki/DateAndTime
+
+***
+
+``` lua
+local start = os.clock()
+
+for i=1, N do
+  -- ...
+end
+
+local finish = os.clock()
+
+print(finish-start)
+
+```
+
+***
+
+`collectgarbage()`
+
+***
+
+``` lua
+local elapsed = 0
+
+for i=1, N do
+  collectgarbage()
+  local start = os.clock()
+  -- ...
+  local finish = os.clock()
+  accumulator = accumulator + finish - start
+end
+
+
+print(elapsed)
+```
+
+***
+
+`collectgarbage("stop")`
+
+***
+
+```
+collectgarbage("stop")
+local start = os.clock()
+
+for i=1, N do
+  -- ...
+end
+
+local finish = os.clock()
+collectgarbage("restart")
+
+print(finish - start)
+```
+***
+
+`collectgarbage("count")`
+
+***
+
+``` lua
+local start = os.clock()
+
+for i=1, N do
+  -- ...
+end
+
+local finish = os.clock()
+
+print(finish-start)
+
+```
+
+***
+
+Iterations/time
+
+***
+
+``` lua
+local limit = 10000 -- 10 seconds
+local elapsed = 0
+local n = 0
+
+while elapsed < limit do
+  local start = os.clock()
+  -- ...
+  local finish = os.clock()
+  elapsed = elapsed + (finish - start)
+  n = n + 1
+end
+
+print(n)
+
+```
+
+***
+
+Iterations/time
+
+***
+
+# III. C Land
+
+***
+
+<figure class="stretch">
+  <a href="http://www.brendangregg.com/">
+   <img src="./img/brendangregg.jpg" class="stretch plain" width="100%">
+  </a>
+  <small>https://www.brendangregg.com</small>
+</figure>
+
+***
+
+<figure class="stretch">
+  <a href="https://www.youtube.com/watch?v=FfhEdF40nhQ">
+   <img src="./img/yichun.png" class="stretch plain" width="100%">
+  </a>
+  <small>https://www.youtube.com/watch?v=FfhEdF40nhQ</small>
+</figure>
+
+***
+
+```
+profiler.start()
+
+for i=1, N do
+  -- ...
+end
+
+profiler.end()
+profiler.dump("profile.txt")
+
+```
+
+***
+
+<!-- .slide: data-background="./img/wall-of-text.jpg" -->
+
+***
+
+<!-- .slide: data-background="./img/wall-of-text-2.jpg" -->
+
+***
+
+<figure class="stretch">
+  <img src="./img/cpu-flame.svg" class="stretch" width="100%">
+</figure>
+
+***
+
+<figure class="stretch">
+  <img src="./img/memory-flame.svg" class="stretch" width="100%">
+</figure>
+
+***
+
+<figure class="stretch">
+  <img src="./img/off-cpu-flame.svg" class="stretch" width="100%">
+</figure>
+
+***
+
+<figure class="stretch">
+  <img src="./img/diff-flame.svg" class="stretch" width="100%">
+</figure>
+
+***
+
+<figure class="stretch">
+  <img src="./img/time_series.png" class="stretch" width="100%">
+</figure>
+
+***
+
+<figure class="stretch">
+  <a href="https://openresty.org/en/profiling.html">
+    <img src="./img/openresty_profiling.png" class="stretch" width="100%">
+  </a>
+  <small>https://openresty.org/en/profiling.html</small>
+</figure>
+
+
+***
+
+# IV. Common Pitfalls
+
+***
+
+<!-- .slide: data-background="#68b6df" -->
+
+<figure class="stretch">
+  <a href="https://love2d.org">
+    <img src="./img/love.png" class="stretch" width="100%">
+  </a>
+  &nbsp;
+  <small>https://love2d.org</small>
+</figure>
+
+***
+
+<figure class="stretch">
+  <img src="./img/newcommers.jpg" class="stretch plain">
+</figure>
+
+***
+
+<!-- .slide: data-background="#68b6df" -->
+
+<figure class="stretch">
+  <img src="./img/performance.png" class="stretch plain">
+</figure>
+
+***
+
+<!-- .slide: data-background="#68b6df" -->
+
+<figure class="stretch">
+  <img src="./img/forum-post.png" class="stretch plain">
+</figure>
+
+***
+
+<!-- .slide: data-background="#68b6df" -->
+
+> <small> My doubt is: Am I doing it right? Would that be bad for performance?
+          And if so, is there any *trick* you could tell me to do it better, please? </small>
+
+***
+
+<figure class="stretch">
+  <img src="./img/flash.jpg" class="stretch">
+</figure>
+
+***
+
+<!-- .slide: data-background="#000000" -->
+<figure class="stretch">
+  <img src="./img/flash-running.gif" class="stretch" width="100%">
+</figure>
+
+***
+
+<figure class="stretch">
+  <img src="./img/fat-flash.jpg" class="stretch">
+</figure>
+
+***
+
+<!-- .slide: data-background="#ff9101" -->
+<figure class="stretch">
+  <img src="./img/fat-flash2.jpg" class="stretch plain">
+</figure>
+
+***
+
+<!-- .slide: data-background="#000000" -->
+<figure class="stretch">
+  <img src="./img/get_off_my_lawn.jpg" class="stretch plain">
+</figure>
+
+***
+
+<!-- .slide: data-background="#000000" -->
+<figure class="stretch">
+  <img src="./img/jesus.png" class="stretch plain">
+</figure>
+
+***
+
+<figure class="stretch">
+  <img src="./img/car.png" class="stretch plain" width=100%>
+</figure>
+
+***
+
+<!-- .slide: data-background="./img/paint-off.jpg" -->
+
+***
+
+<!-- .slide: data-background="./img/paint-off.jpg" -->
+
+> Can't make a car faster by chipping away the paint
+
+***
+
+<!-- .slide: data-background="./img/paint-off.jpg" -->
+
+> Can't make a car faster by chipping away the paint(*)
+
+> <small>(*)Unless the car is made out mostly of paint</small>
+
+***
+
+<!-- .slide: data-background="#525659" -->
+<figure class="stretch">
+  <a href="https://www.lua.org/gems/sample.pdf">
+    <img src="./img/tips.png" class="stretch plain" width=100%>
+  </a>
+  <small>https://www.lua.org/gems/sample.pdf</small>
+</figure>
+
+***
+
+# ¿Questions?
+
+### Enrique García Cota
+### [@otikik](https://twitter.com/otikik) / [kikito](https://github.com/kikito)
+
+***
+
+<!-- .slide: data-background="./img/thank-you.jpg" -->
+
+          </script>
+        </section>
+      </div>
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+
+        width: 960,
+        height: 700,
+
+        margin: 0.1,
+
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 1,
+
+        center: true,
+
+        theme: 'kikito',
+        transition: 'fade', // default/cube/page/concave/zoom/linear/fade/none
+        transitionSpeed: 'fast',
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+          { src: 'plugin/highlight/highlight.js', async: true, condition: function() { return true; }, callback: function() { hljs.initHighlightingOnLoad(); } },
+          { src: 'plugin/zoom-js/zoom.js', async: true },
+          { src: 'plugin/notes/notes.js', async: true }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>

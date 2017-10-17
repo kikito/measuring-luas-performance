@@ -391,6 +391,9 @@ body {
   font-size: 1.5em;
   position: relative;
   border-radius: 0.5em; }
+  .reveal section blockquote .non-italic {
+    font-family: "Arimo", sans-serif;
+    font-style: normal; }
   .reveal section blockquote:before {
     content: "\201C";
     font-size: 5em;

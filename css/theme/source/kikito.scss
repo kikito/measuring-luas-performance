@@ -201,6 +201,11 @@ $altLinkColor: #ffffea;
       position: relative;
       border-radius: 0.5em;
 
+      .non-italic {
+        font-family: $mainFont;
+        font-style: normal;
+      }
+
       &:before {
         content: "\201C";
         font-size: 5em;

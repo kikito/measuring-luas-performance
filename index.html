@@ -124,6 +124,12 @@ Win/linux: ms. Others: ms or s
 
 `os.clock()`
 
+Or nothing
+
+***
+
+`os.clock()`
+
 http://lua-users.org/wiki/DateAndTime
 
 ***
@@ -132,7 +138,7 @@ http://lua-users.org/wiki/DateAndTime
 local start = os.clock()
 
 for i=1, N do
-  -- ...
+  -- [code]
 end
 
 local finish = os.clock()
@@ -148,18 +154,103 @@ print(finish-start)
 ***
 
 ``` lua
+local start = os.clock()
+
+for i=1, N do
+  collectgarbage()
+  -- [code]
+end
+
+local finish = os.clock()
+
+print(elapsed)
+```
+
+***
+
+``` lua
+local start = os.clock()
+
+for i=1, N do
+  collectgarbage() -- ⚠️
+  -- [code]
+end
+
+local finish = os.clock()
+
+print(elapsed)
+```
+
+***
+
+``` lua
 local elapsed = 0
 
 for i=1, N do
   collectgarbage()
   local start = os.clock()
-  -- ...
+  -- [code]
   local finish = os.clock()
   elapsed = elapsed + finish - start
 end
 
+print(elapsed)
+```
+
+***
+
+``` lua
+local elapsed = 0
+
+for i=1, N do
+  collectgarbage()
+  local start = os.clock()
+  -- [code]
+  local finish = os.clock() -- ⚠️
+  elapsed = elapsed + finish - start
+end
 
 print(elapsed)
+
+```
+
+***
+
+``` lua
+for i=1, N do
+  collectgarbage()
+  local start = os.clock()
+  -- [code]                 -- ⏰
+  local finish = os.clock()
+  elapsed = elapsed + finish - start
+end
+
+```
+
+***
+
+``` lua
+for i=1, N do
+  collectgarbage()
+  local start = os.clock()
+  -- [code]                 -- ⏰
+  local finish = os.clock() -- ⏰ !
+  elapsed = elapsed + finish - start
+end
+
+```
+
+***
+
+``` lua
+
+  -- [code]
+  local finish = os.clock()
+  -- [code]
+  local finish = os.clock()
+  -- [code]
+  local finish = os.clock()
+  ...
 ```
 
 ***
@@ -181,51 +272,49 @@ collectgarbage("restart")
 
 print(finish - start)
 ```
+
 ***
 
-`collectgarbage("count")`
+<figure class="stretch">
+ <img src="./img/garbage.jpg" class="stretch plain" width="100%">
+</figure>
+
+***
+
+<!-- .slide: data-background="#FF4136" -->
+
+> Regressions due to increased memory trashing <span class="non-italic">😭</span>
 
 ***
 
 ``` lua
+
 local start = os.clock()
 
-for i=1, N do
+for i=1, N do -- ⬅️
   -- ...
 end
 
 local finish = os.clock()
 
-print(finish-start)
-
+print(finish - start)
 ```
 
 ***
 
-Iterations/time
+# N
 
 ***
 
-``` lua
-local limit = 10000 -- 10 seconds
-local elapsed = 0
-local n = 0
-
-while elapsed < limit do
-  local start = os.clock()
-  -- ...
-  local finish = os.clock()
-  elapsed = elapsed + (finish - start)
-  n = n + 1
-end
-
-print(n)
-
-```
+<figure class="stretch">
+  <img src="./img/The_Normal_Distribution.svg" class="stretch plain" width="100%">
+</figure>
 
 ***
 
-Iterations/time
+<figure class="stretch">
+  <img src="./img/finger.jpg" class="stretch plain" width="100%">
+</figure>
 
 ***
 
@@ -244,7 +333,7 @@ Iterations/time
 
 <figure class="stretch">
   <a href="https://www.youtube.com/watch?v=FfhEdF40nhQ">
-   <img src="./img/yichun.png" class="stretch plain" width="100%">
+   <img src="./img/yichun.png" class="stretch plain" height="90%">
   </a>
   <small>https://www.youtube.com/watch?v=FfhEdF40nhQ</small>
 </figure>
@@ -262,6 +351,13 @@ profiler.end()
 profiler.dump("profile.txt")
 
 ```
+
+***
+
+* Linux: perf, eBPF, SystemTap, and ktap
+* Solaris, illumos, FreeBSD: DTrace
+* Mac OS X: DTrace and Instruments
+* Windows: Xperf.exe
 
 ***
 
@@ -384,6 +480,14 @@ profiler.dump("profile.txt")
 
 ***
 
+<!-- .slide: data-background="./img/crowd.jpg" -->
+
+***
+
+## ⏰
+
+***
+
 <!-- .slide: data-background="#000000" -->
 <figure class="stretch">
   <img src="./img/get_off_my_lawn.jpg" class="stretch plain">
@@ -411,6 +515,12 @@ profiler.dump("profile.txt")
 <!-- .slide: data-background="./img/paint-off.jpg" -->
 
 > Can't make a car faster by chipping away the paint
+
+***
+
+<figure class="stretch">
+  <img src="./img/pointing-out.jpg" class="stretch plain" width=100%>
+</figure>
 
 ***
 

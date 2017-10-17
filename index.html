@@ -322,6 +322,10 @@ print(finish - start)
 
 ***
 
+## Profiling
+
+***
+
 <figure class="stretch">
   <a href="http://www.brendangregg.com/">
    <img src="./img/brendangregg.jpg" class="stretch plain" width="100%">
@@ -340,6 +344,13 @@ print(finish - start)
 
 ***
 
+* Linux: perf, eBPF, SystemTap, and ktap
+* Solaris, illumos, FreeBSD: DTrace
+* Mac OS X: DTrace and Instruments
+* Windows: Xperf.exe
+
+***
+
 ```
 profiler.start()
 
@@ -351,13 +362,6 @@ profiler.end()
 profiler.dump("profile.txt")
 
 ```
-
-***
-
-* Linux: perf, eBPF, SystemTap, and ktap
-* Solaris, illumos, FreeBSD: DTrace
-* Mac OS X: DTrace and Instruments
-* Windows: Xperf.exe
 
 ***
 
